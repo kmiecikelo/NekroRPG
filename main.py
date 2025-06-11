@@ -10,7 +10,6 @@ def main():
     menu = True
     game = False
     createplayer = False
-
     player = None
 
     while menu:
