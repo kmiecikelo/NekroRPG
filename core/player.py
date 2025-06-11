@@ -11,6 +11,8 @@ class Player:
         self.name = name
         self.max_hp = max_hp
         self.hp = max_hp
+        self.inventory = {}  # item_id -> quantity
+        self.item_manager = None  # musi być przypisany z zewnątrz
 
         self.strength = strength  # siła – wpływa na dmg
         self.defence = defence  # obrona – np. wpływa na otrzymywane dmg
@@ -23,8 +25,9 @@ class Player:
         self.rasa = rasa
         self.gold = gold
         self.lp = lp
+        self.inventory = {}
 
-        self.location = "start"  # aktualna lokacja
+        self.location = "xyras_house"  # aktualna lokacja
         self.lm = LocationManager()  # menedżer lokacji
 
     def status(self):
@@ -76,11 +79,53 @@ class Player:
         exits = loc.get("exits", {})
         if direction in exits:
             self.location = exits[direction]
-            print(Fore.GREEN + f"Przechodzisz {direction} do {self.location}.")
-            time.sleep(0.5)
+            print(Fore.GREEN + f"Przechodzisz {direction} do {loc['name']}.")
+            time.sleep(1)
         else:
             print(Fore.RED + "Nie możesz tam pójść.")
 
+    def add_item(self, item_id, quantity=1):
+        if item_id not in self.inventory:
+            self.inventory[item_id] = 0
+        self.inventory[item_id] += quantity
+        print(f"Dodano do ekwipunku: {item_id} x{quantity}")
+
+    def remove_item(self, item_id, quantity=1):
+        if item_id in self.inventory:
+            self.inventory[item_id] -= quantity
+            if self.inventory[item_id] <= 0:
+                del self.inventory[item_id]
+
+    def show_inventory(self):
+        clear()
+        print("\n" + Fore.CYAN + "=" * 20 + " EKWIPUNEK " + "=" * 20)
+        if not self.inventory:
+            print(Fore.YELLOW + "Brak przedmiotów w ekwipunku.")
+            return
+
+        for item_id, qty in self.inventory.items():
+            item = self.item_manager.get_item(item_id) if self.item_manager else None
+            item_name = item["name"] if item and "name" in item else item_id
+            print(Fore.YELLOW + f"{item_name}: {Style.BRIGHT}x{qty}")
+
+    def pick_item(self, item_name):
+        loc = self.lm.get_location(self.location)
+        if not loc:
+            print(Fore.RED + "Nieznana lokacja.")
+            return False
+
+        items = loc.get("items", [])
+        if item_name in items:
+            # Dodaj do ekwipunku
+            self.add_item(item_name)
+            # Usuń z lokacji
+            items.remove(item_name)
+            loc["items"] = items  # aktualizacja listy w lokacji
+            print(Fore.GREEN + f"Zabrałeś przedmiot: {item_name}")
+            return True
+        else:
+            print(Fore.RED + f"Przedmiot '{item_name}' nie znajduje się tutaj.")
+            return False
 
     def to_dict(self):
         return {
@@ -97,6 +142,7 @@ class Player:
             "gold": self.gold,
             "lp": self.lp,
             "location": self.location,
+            "inventory": self.inventory,
         }
 
     @staticmethod
@@ -114,6 +160,7 @@ class Player:
         p.gold = data["gold"]
         p.lp = data["lp"]
         p.location = data["location"]
+        p.inventory = data.get("inventory", {})
         return p
 
     def save(self, filename="save.json"):
