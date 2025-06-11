@@ -35,35 +35,21 @@ def game_loop(player):
         print("\n" + Fore.CYAN + "=" * 23 + " MENU " + "=" * 23)
         print("stat / statystyki / info – pokaż status gracza")
         print("inv / eq / ekwipunek / inventory – pokaż ekwipunek gracza")
-        print("pick / zbierz / weź – podnosi przedmiot")
         print("zapisz / save - zapisz stan gry")
         print("north / south / east / west – porusz się w danym kierunku")
         print("exit / koniec  – wyjdź z gry")
 
         wybor = input(
-            f"\n<hp{player.hp}/{player.max_hp}> <g{player.gold}> <exp{player.exp}/{player.exp_to_next_level()}> >> "
+            f"\n{Fore.RED}{Style.BRIGHT}<hp{player.hp}/{player.max_hp}>{Style.RESET_ALL} "
+            f"{Fore.YELLOW}{Style.BRIGHT}<g{player.gold}>{Style.RESET_ALL} "
+            f"{Fore.BLUE}{Style.BRIGHT}<exp{player.exp}/{player.exp_to_next_level()}>{Style.RESET_ALL} "
+            f"{Fore.CYAN}{Style.BRIGHT}>>{Style.RESET_ALL} "
         ).lower().strip()
 
         if wybor in ["stat", "statystyki", "info", "informacje", "stats"]:
             player.status()
         elif wybor in ["inv", "eq", "ekwipunek", "inventory"]:
             player.show_inventory()
-        elif wybor.startswith(("pick ", "zbierz ", "weź ")):
-            # wyciągamy nazwę przedmiotu po spacji
-            # usuwamy pierwszy wyraz i pobieramy resztę jako nazwę przedmiotu
-            parts = wybor.split(" ", 1)
-            if len(parts) > 1:
-                item_name = parts[1].strip()
-                if item_name:
-                    success = player.pick_item(item_name)
-                    if not success:
-                        print(Fore.RED + "Nie udało się podnieść przedmiotu.")
-                else:
-                    print(Fore.RED + "Podaj nazwę przedmiotu do podniesienia.")
-            else:
-                print(Fore.RED + "Podaj nazwę przedmiotu do podniesienia.")
-            time.sleep(1)
-            clear()
         elif wybor in ["exit", "koniec"]:
             exit()
         elif wybor == "exp100":
@@ -84,10 +70,11 @@ def game_loop(player):
         else:
             print(Fore.RED + random.choice([
                 "Nie rozumiem.",
-                "Hm?????",
+                "Hmmm??",
                 "Co to ma znaczyć?",
                 "Spróbuj jeszcze raz.",
-                "Nie mam pojęcia o co chodzi."
+                "Nie mam pojęcia o co chodzi.",
+                "Co?"
             ]))
             time.sleep(0.8)
             clear()
