@@ -1,0 +1,17 @@
+[
+    {
+        "id": "potion_heal",
+        "name": "Mikstura Leczenia",
+        "type": "potion",
+        "heal": 20,
+        "description": "Przywraca trochę zdrowia."
+    },
+    {
+        "id": "potion_strength",
+        "name": "Mikstura Siły",
+        "type": "potion",
+        "buff": "strength",
+        "duration": 60,
+        "description": "Zwiększa siłę na 60 sekund."
+    }
+]

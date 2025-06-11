@@ -1,0 +1,16 @@
+[
+    {
+        "id": "sword_01",
+        "name": "Miecz Żelazny",
+        "type": "weapon",
+        "damage": 10,
+        "description": "Prosty miecz z żelaza."
+    },
+    {
+        "id": "axe_01",
+        "name": "Topór Drwala",
+        "type": "weapon",
+        "damage": 12,
+        "description": "Ciężki topór, idealny do walki."
+    }
+]
