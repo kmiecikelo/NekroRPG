@@ -41,9 +41,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-    #player = Player.load()
-    #game = True
-    #menu = False
-    #while game:
-    #    game_loop(player)
+    #main()
+    player = Player.load()
+    game = True
+    menu = False
+    while game:
+        game_loop(player)

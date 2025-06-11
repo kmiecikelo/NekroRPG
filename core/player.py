@@ -1,3 +1,6 @@
+import time
+
+from core.location_manager import LocationManager
 from utils.clean_screen import clear
 from colorama import init, Fore, Style
 import json
@@ -20,6 +23,9 @@ class Player:
         self.rasa = rasa
         self.gold = gold
         self.lp = lp
+
+        self.location = "start"  # aktualna lokacja
+        self.lm = LocationManager()  # menedżer lokacji
 
     def status(self):
         clear()
@@ -61,6 +67,21 @@ class Player:
         self.exp += amount
         self.check_level_up()
 
+    def move(self, direction):
+        loc = self.lm.get_location(self.location)
+        if not loc:
+            print("Błąd: nieznana lokalizacja.")
+            return
+
+        exits = loc.get("exits", {})
+        if direction in exits:
+            self.location = exits[direction]
+            print(Fore.GREEN + f"Przechodzisz {direction} do {self.location}.")
+            time.sleep(0.5)
+        else:
+            print(Fore.RED + "Nie możesz tam pójść.")
+
+
     def to_dict(self):
         return {
             "name": self.name,
@@ -75,6 +96,7 @@ class Player:
             "rasa": self.rasa,
             "gold": self.gold,
             "lp": self.lp,
+            "location": self.location,
         }
 
     @staticmethod
@@ -91,6 +113,7 @@ class Player:
         p.rasa = data["rasa"]
         p.gold = data["gold"]
         p.lp = data["lp"]
+        p.location = data["location"]
         return p
 
     def save(self, filename="save.json"):

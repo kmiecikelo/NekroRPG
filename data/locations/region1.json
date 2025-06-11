@@ -1,0 +1,75 @@
+{
+  "start": {
+    "name": "Pustkowie",
+    "description": "Rozległa, wietrzna równina pokryta żółtą trawą. W oddali widać zarys lasu.",
+    "exits": {
+      "north": "forest",
+      "east": "ruins"
+    }
+  },
+  "forest": {
+    "name": "Las Czarnego Dębu",
+    "description": "Gęste poszycie blokuje większość światła. Powietrze pachni żywicą i wilgocią. Słychać dziwne skrzypienie gałęzi.",
+    "exits": {
+      "south": "start",
+      "east": "tavern",
+      "north": "cave"
+    }
+  },
+  "tavern": {
+    "name": "Opuszczona Karczma",
+    "description": "Budynek z pochylonym dachem, w którym czuć zapach stęchlizny i starych beczek. Na podłodze leżą porozrzucane karty do gry.",
+    "exits": {
+      "west": "forest",
+      "down": "cellar"
+    },
+    "items": ["zardzewiały klucz", "pusta butelka"]
+  },
+  "cellar": {
+    "name": "Piwnica Karczmy",
+    "description": "Ciemne pomieszczenie pełne pustych beczek po piwie. W powietrzu unosi się zapach zgnilizny.",
+    "exits": {
+      "up": "tavern"
+    },
+    "hidden": ["zakurzony dziennik"]
+  },
+  "cave": {
+    "name": "Jaskinia Szepczących Kamieni",
+    "description": "Wilgotne ściany pokryte są dziwnymi fosforyzującymi porostami. Kamienie wydają się cicho szeptać gdy się poruszasz.",
+    "exits": {
+      "southeast": "forest",
+      "north": "tunnel"
+    }
+  },
+  "tunnel": {
+    "name": "Wąski Tunel",
+    "description": "Ciasne przejście wymagające czołgania się. Powietrze jest tu ciężkie i trudno oddychać.",
+    "exits": {
+      "south": "cave",
+      "north": "chamber"
+    }
+  },
+  "chamber": {
+    "name": "Ukryta Komnata",
+    "description": "Okrągłe pomieszczenie ze ścianami pokrytymi starożytnymi runami. W centrum stoi kamienny piedestał.",
+    "exits": {
+      "south": "tunnel"
+    },
+    "secrets": ["kamienny artefakt"]
+  },
+  "ruins": {
+    "name": "Ruiny Strażnicy",
+    "description": "Pozostałości po kamiennej budowli. Tylko jedna wieża ocalała z upływem czasu.",
+    "exits": {
+      "west": "start",
+      "climb": "tower"
+    }
+  },
+  "tower": {
+    "name": "Szczyt Wieży",
+    "description": "Wspaniały widok na całą okolicę rozciąga się z tego punktu. Widać nawet odległe góry.",
+    "exits": {
+      "down": "ruins"
+    }
+  }
+}
