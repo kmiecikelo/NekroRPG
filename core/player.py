@@ -1,34 +1,30 @@
 import time
 
+from core.item_manager import ItemManager
 from core.location_manager import LocationManager
 from utils.clean_screen import clear
 from colorama import init, Fore, Style
 import json
 
 class Player:
-    def __init__(self, name, max_hp=50, strength=5, defence=5, dexterity=5, level=1, exp=0, exptonextlvl=100,
+    def __init__(self, name, max_hp=50, strength=5, defence=5, dexterity=5, level=1, exp=0,
                  klasa="Wojownik", rasa="Człowiek", gold=0, lp=0):
         self.name = name
-        self.max_hp = max_hp
-        self.hp = max_hp
-        self.inventory = {}  # item_id -> quantity
-        self.item_manager = None  # musi być przypisany z zewnątrz
-
-        self.strength = strength  # siła – wpływa na dmg
-        self.defence = defence  # obrona – np. wpływa na otrzymywane dmg
-        self.dexterity = dexterity  # obrona – np. wpływa na otrzymywane dmg
-
-        self.level = level
-        self.exp = exp
-        self.exptonextlvl = exptonextlvl
+        self.max_hp = max(max_hp, 0)
+        self.hp = self.max_hp
+        self.strength = max(strength, 0)
+        self.defence = max(defence, 0)
+        self.dexterity = max(dexterity, 0)
+        self.level = max(level, 1)
+        self.exp = max(exp, 0)
         self.klasa = klasa
         self.rasa = rasa
-        self.gold = gold
-        self.lp = lp
+        self.gold = max(gold, 0)
+        self.lp = max(lp, 0)
         self.inventory = {}
-
-        self.location = "xyras_house"  # aktualna lokacja
-        self.lm = LocationManager()  # menedżer lokacji
+        self.item_manager = ItemManager()
+        self.location = "xyras_house"
+        self.lm = LocationManager()
 
     def status(self):
         clear()
@@ -70,6 +66,10 @@ class Player:
         self.exp += amount
         self.check_level_up()
 
+    def heal(self, amount):
+        self.hp = min(self.hp + amount, self.max_hp)
+        print(f"Przywrocono {amount} HP. Aktualne HP: {self.hp}/{self.max_hp}")
+
     def move(self, direction):
         loc = self.lm.get_location(self.location)
         if not loc:
@@ -78,16 +78,25 @@ class Player:
 
         exits = loc.get("exits", {})
         if direction in exits:
-            self.location = exits[direction]
-            print(Fore.GREEN + f"Przechodzisz {direction} do {loc['name']}.")
-            time.sleep(1)
+            new_location_id = exits[direction]
+            new_location = self.lm.get_location(new_location_id)
+            if new_location:
+                self.location = new_location_id
+                print(Fore.GREEN + f"Przechodzisz {direction} do {new_location['name']}.")
+                time.sleep(1)
+            else:
+                print(Fore.RED + "Błąd: docelowa lokacja nie istnieje.")
         else:
             print(Fore.RED + "Nie możesz tam pójść.")
 
     def add_item(self, item_id, quantity=1):
-        if item_id not in self.inventory:
-            self.inventory[item_id] = 0
-        self.inventory[item_id] += quantity
+        if quantity <= 0:
+            raise ValueError("Quantity must be positive.")
+        if not self.item_manager:
+            raise RuntimeError("Item manager not set.")
+        if item_id not in self.item_manager.items:
+            raise ValueError(f"Item {item_id} does not exist.")
+        self.inventory[item_id] = self.inventory.get(item_id, 0) + quantity
         print(f"Dodano do ekwipunku: {item_id} x{quantity}")
 
     def remove_item(self, item_id, quantity=1):
@@ -107,26 +116,6 @@ class Player:
             item = self.item_manager.get_item(item_id) if self.item_manager else None
             item_name = item["name"] if item and "name" in item else item_id
             print(Fore.YELLOW + f"{item_name}: {Style.BRIGHT}x{qty}")
-
-    def pick_item(self, item_name):
-        loc = self.lm.get_location(self.location)
-        if not loc:
-            print(Fore.RED + "Nieznana lokacja.")
-            return False
-
-        items = loc.get("items", [])
-        if item_name in items:
-            # Dodaj do ekwipunku
-            self.add_item(item_name)
-            # Usuń z lokacji
-            items.remove(item_name)
-            loc["items"] = items  # aktualizacja listy w lokacji
-            print(Fore.GREEN + f"Zabrałeś przedmiot: {item_name}")
-            return True
-        else:
-            print(Fore.RED + f"Przedmiot '{item_name}' nie znajduje się tutaj.")
-            return False
-
     def to_dict(self):
         return {
             "name": self.name,
@@ -164,8 +153,11 @@ class Player:
         return p
 
     def save(self, filename="save.json"):
-        with open(filename, "w") as f:
-            json.dump(self.to_dict(), f, indent=4)
+        try:
+            with open(filename, "w") as f:
+                json.dump(self.to_dict(), f, indent=4)
+        except IOError as e:
+            print(f"Error saving game: {e}")
 
     @staticmethod
     def load(filename="save.json"):
