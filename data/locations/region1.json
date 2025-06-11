@@ -1,7 +1,7 @@
 {
-  "start": {
-    "name": "Pustkowie",
-    "description": "Rozległa, wietrzna równina pokryta żółtą trawą. W oddali widać zarys lasu.",
+  "xyras_house": {
+    "name": "Dom Xyras'a",
+    "description": "Dom położony na rozległej, wietrznej równinie, gdzie złociste trawy falują pod delikatnym podmuchem wiatru. W oddali majaczy tajemniczy zarys gęstego lasu, zapraszając do odkrycia jego sekretów.",
     "exits": {
       "north": "forest",
       "east": "ruins"
@@ -9,9 +9,9 @@
   },
   "forest": {
     "name": "Las Czarnego Dębu",
-    "description": "Gęste poszycie blokuje większość światła. Powietrze pachni żywicą i wilgocią. Słychać dziwne skrzypienie gałęzi.",
+    "description": "Gęste poszycie blokuje większość światła. Powietrze pachnie żywicą i wilgocią. Słychać dziwne skrzypienie gałęzi.",
     "exits": {
-      "south": "start",
+      "south": "xyras_house",
       "east": "tavern",
       "north": "cave"
     }
