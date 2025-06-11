@@ -1,12 +1,9 @@
-import time
-
 from core.player import Player
 from core.main_menu import main_menu
 from core.engine import game_loop
 from colorama import init, Fore, Style
 from scenes.intro import create_player
-
-init(autoreset=True, convert=True)
+init(autoreset=True)
 
 
 def main():
@@ -28,7 +25,14 @@ def main():
                 menu = False
             except FileNotFoundError:
                 print("Brak zapisu gry!")
-                input("\nNaciśnij Enter aby wrócić...")
+                print("Chcesz zacząć nową grę? (t/n)")
+                wybor = input(Fore.GREEN + "\nWpisz komendę: " + Style.RESET_ALL).lower().strip()
+
+                if wybor in ["t", "tak", "yes"]:
+                    createplayer = True
+                    menu = False
+                elif wybor in ["n", "nie", "no"]:
+                    continue
     if createplayer:
         player = create_player()
         game = True
@@ -39,3 +43,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+    #player = Player.load()
+    #game = True
+    #menu = False
+    #while game:
+    #    game_loop(player)
