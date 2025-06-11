@@ -1,3 +1,4 @@
+from core.item_manager import ItemManager
 from core.player import Player
 from core.main_menu import main_menu
 from core.engine import game_loop
@@ -7,6 +8,7 @@ init(autoreset=True)
 
 
 def main():
+    item_manager = ItemManager()
     menu = True
     game = False
     createplayer = False
@@ -20,6 +22,7 @@ def main():
         elif choice == "loadgame":
             try:
                 player = Player.load()
+                player.item_manager = item_manager
                 game = True
                 menu = False
             except FileNotFoundError:
@@ -34,6 +37,7 @@ def main():
                     continue
     if createplayer:
         player = create_player()
+        player.item_manager = item_manager
         game = True
 
     while game:
@@ -42,8 +46,9 @@ def main():
 
 if __name__ == "__main__":
     #main()
+    item_manager = ItemManager()
     player = Player.load()
+    player.item_manager = item_manager
     game = True
     menu = False
-    while game:
-        game_loop(player)
+    game_loop(player)
