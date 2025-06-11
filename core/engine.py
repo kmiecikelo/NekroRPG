@@ -1,3 +1,4 @@
+import random
 import time
 
 from colorama import init, Fore, Style
@@ -26,6 +27,12 @@ def game_loop(player):
         time.sleep(0.8)
         clear()
     else:
-        print(Fore.RED + "Nieprawidłowa komenda.")
+        print(Fore.RED + random.choice([
+            "Nie rozumiem.",
+            "Hm?????",
+            "Co to ma znaczyć?",
+            "Spróbuj jeszcze raz.",
+            "Nie mam pojęcia o co chodzi."
+        ]))
         time.sleep(0.8)
         clear()
