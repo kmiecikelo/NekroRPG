@@ -1,7 +1,9 @@
 import random
 import time
-
+import textwrap
 from colorama import init, Fore, Style
+
+from core.item_manager import ItemManager
 from utils.clean_screen import clear
 
 
@@ -9,17 +11,24 @@ def game_loop(player):
     clear()
     while True:
         loc = player.lm.get_location(player.location)
+        npcs = player.lm.get_npcs(player.location)
+        items = loc.get("items")
         if loc:
             print("\n" + Fore.CYAN + "=" * 20 + " LOKACJA " + "=" * 20)
             print(f"{Fore.YELLOW}Nazwa: {Style.BRIGHT}{loc['name']}")
-            print(f"{Fore.YELLOW}Opis: {Style.RESET_ALL}{loc['description']}\n")
-
-            items = loc.get("items")
+            print(f"{Fore.YELLOW}Opis: {Style.RESET_ALL}{textwrap.fill(loc['description'], width=70)}\n")
             if items:
-                print(f"{Fore.MAGENTA}Przedmioty w lokacji:")
-                for item in items:
-                    print(f"  - {item}")
-                print()  # pusta linia dla czytelności
+                print(f"{Fore.YELLOW}Przedmioty w lokacji:")
+                for item_id, qty in items.items():
+                    item = player.item_manager.get_item(item_id)
+                    if item:
+                        if qty > 1:
+                            print(f" - {Fore.GREEN}{item['name']} (x{qty}) {Style.RESET_ALL} {item['description']}")
+                        else:
+                            print(f" - {Fore.GREEN}{item['name']} {Style.RESET_ALL} {item['description']}")
+                    else:
+                        print(f"  - {item_id} (nieznany przedmiot)")
+                print()
 
             exits = loc.get("exits", {})
             exits_desc = []
@@ -32,11 +41,10 @@ def game_loop(player):
         else:
             print(Fore.RED + "\nNieznana lokacja.")
 
-        npcs = player.lm.get_npcs(player.location)
         if npcs:
             print(f"\n{Fore.YELLOW}Spotykasz NPC:")
             for npc in npcs:
-                print(f"- {npc['name']}")
+                print(f"- {Fore.GREEN}{npc['name']} - {Style.RESET_ALL}{textwrap.fill(npc['description'], width=70)}")
         else:
             print("Nie ma tu nikogo...")
 
@@ -74,6 +82,37 @@ def game_loop(player):
         elif wybor in ["north", "south", "east", "west", "up", "down"]:
             player.move(wybor)
             time.sleep(0.5)
+            clear()
+        elif wybor.startswith("pick ") or wybor.startswith("weź "):
+            parts = wybor.split()
+            if len(parts) < 2:
+                print(Fore.RED + "Podaj nazwę przedmiotu do podniesienia.")
+                time.sleep(1)
+                clear()
+                continue
+            # nazwa przedmiotu może mieć spacje, ostatni element może być liczbą (ilością)
+            if parts[-1].isdigit():
+                amount = int(parts[-1])
+                item_name = " ".join(parts[1:-1]).lower()
+            else:
+                amount = 1
+                item_name = " ".join(parts[1:]).lower()
+            # Znajdź ID przedmiotu po nazwie w lokalnych przedmiotach
+            found_item_id = None
+            loc_items = loc.get("items", {})
+            for item_id in loc_items:
+                item = player.item_manager.get_item(item_id)
+                if item and item['name'].lower() == item_name:
+                    found_item_id = item_id
+                    break
+            if not found_item_id:
+                print(Fore.RED + f"Nie ma takiego przedmiotu '{item_name}' w lokacji.")
+            else:
+                available = loc_items[found_item_id]
+                if amount > available:
+                    print(Fore.RED + f"Nie ma tyle przedmiotów do podniesienia (dostępne: {available}).")
+                else:
+                    player.pickitem(found_item_id, amount)
             clear()
         else:
             print(Fore.RED + random.choice([
