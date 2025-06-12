@@ -21,3 +21,8 @@ class LocationManager:
         location = self.get_location(loc_id)
         return location.get("npcs", []) if location else []
 
+    def to_dict(self):
+        return self.locations
+
+    def from_dict(self, data):
+        self.locations = data

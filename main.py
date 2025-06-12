@@ -19,20 +19,23 @@ def main():
             createplayer = True
             menu = False
         elif choice == "loadgame":
-            try:
-                player = Player.load()
+            player = Player.load()
+            if player:
                 game = True
                 menu = False
-            except FileNotFoundError:
-                print("Brak zapisu gry!")
-                print("Chcesz zacząć nową grę? (t/n)")
-                wybor = input(Fore.GREEN + "\nWpisz komendę: " + Style.RESET_ALL).lower().strip()
-
-                if wybor in ["t", "tak", "yes"]:
-                    createplayer = True
-                    menu = False
-                elif wybor in ["n", "nie", "no"]:
-                    continue
+            else:
+                print(Fore.YELLOW + "Wczytywanie nie powiodło się.")
+                print("Czy chcesz rozpocząć nową grę? (t/n)")
+                while True:
+                    wybor = input(Fore.GREEN + "\nWpisz komendę: ").strip().lower()
+                    if wybor in ["t", "tak"]:
+                        createplayer = True
+                        menu = False
+                        break
+                    elif wybor in ["n", "nie"]:
+                        break
+                    else:
+                        print("Nieprawidłowy wybór.")
     if createplayer:
         player = create_player()
         game = True
@@ -42,10 +45,8 @@ def main():
 
 
 if __name__ == "__main__":
-    #main()
-    player = Player.load()
-    game = True
-    menu = False
-    game_loop(player)
-
-    #dodać npc
+    main()
+    #player = Player.load()
+    #game = True
+    #menu = False
+    #game_loop(player)
