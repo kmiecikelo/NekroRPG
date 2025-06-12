@@ -13,9 +13,18 @@ class ItemManager:
             if filename.endswith(".json"):
                 path = os.path.join(self.items_folder, filename)
                 with open(path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    for item in data:
-                        self.items[item["id"]] = item
+                    try:
+                        data = json.load(f)
+                        # Obsłuż oba przypadki - pojedynczy przedmiot lub lista
+                        if isinstance(data, list):
+                            for item in data:
+                                self.items[item["id"]] = item
+                        elif isinstance(data, dict):  # Pojedynczy przedmiot
+                            self.items[data["id"]] = data
+                    except json.JSONDecodeError as e:
+                        print(f"Błąd w pliku {filename}: {str(e)}")
+                    except KeyError as e:
+                        print(f"Brak wymaganego pola w pliku {filename}: {str(e)}")
 
     def get_item(self, item_id):
         return self.items.get(item_id)
