@@ -37,7 +37,7 @@
     "name": "Jaskinia Szepczących Kamieni",
     "description": "Wilgotne ściany pokryte są dziwnymi fosforyzującymi porostami. Kamienie wydają się cicho szeptać gdy się poruszasz.",
     "exits": {
-      "southeast": "forest",
+      "south": "forest",
       "north": "tunnel"
     }
   },
