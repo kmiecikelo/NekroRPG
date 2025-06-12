@@ -1,0 +1,11 @@
+{
+    "id": "start_sword",
+    "name": "Miecz wojownika",
+    "description": "Solidny miecz dla początkujących wojowników",
+    "slot": "weapon",
+    "stats": {
+        "strength": 5
+    },
+    "required_level": 1,
+    "class_restrictions": ["Wojownik", "Rycerz"]
+}
