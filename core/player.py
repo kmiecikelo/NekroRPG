@@ -1,3 +1,5 @@
+import hashlib
+import os
 import time
 
 from core.item_manager import ItemManager
@@ -5,7 +7,7 @@ from core.location_manager import LocationManager
 from utils.clean_screen import clear
 from utils.load_game_version import CURRENT_GAME_VERSION
 from colorama import init, Fore, Style
-import json
+import marshal
 
 
 
@@ -186,24 +188,46 @@ class Player:
             p.lm.from_dict(data["locations"])
         return p
 
-    def save(self, filename="save.json"):
+    def save(self, filename="save.dat"):
         try:
-            with open(filename, "w") as f:
-                json.dump(self.to_dict(), f, indent=4)
-        except IOError as e:
+            data = self.to_dict()
+
+            # Dodajemy hash dla weryfikacji integralności
+            data_str = str(sorted(data.items()))  # Sortowanie dla spójności
+            data["_integrity"] = hashlib.sha256(data_str.encode()).hexdigest()
+
+            # Zapis binarny z marshal
+            with open(filename, "wb") as f:
+                marshal.dump(data, f)
+        except Exception as e:
             print(f"Error saving game: {e}")
 
     @staticmethod
-    def load(filename="save.json"):
+    def load(filename="save.dat"):
         try:
-            with open(filename, "r") as f:
-                data = json.load(f)
-                save_version = data.get("version", "0.0.0")
-                if save_version != CURRENT_GAME_VERSION:
-                    clear()
-                    print(Fore.RED + f"Nieprawidłowa wersja zapisu ({save_version}). Wersja gry ({CURRENT_GAME_VERSION})")
-                    return None
-                return Player.from_dict(data)
-        except (IOError, json.JSONDecodeError) as e:
+            # Sprawdzenie czy plik istnieje
+            if not os.path.exists(filename):
+                return None
+
+            # Odczyt danych
+            with open(filename, "rb") as f:
+                data = marshal.load(f)
+
+            # Weryfikacja integralności
+            integrity_check = data.pop("_integrity")
+            data_str = str(sorted(data.items()))
+            if hashlib.sha256(data_str.encode()).hexdigest() != integrity_check:
+                print(Fore.RED + "Plik zapisu został zmodyfikowany!")
+                return None
+
+            # Weryfikacja wersji
+            save_version = data.get("version", "0.0.0")
+            if save_version != CURRENT_GAME_VERSION:
+                print(Fore.RED + f"Nieprawidłowa wersja zapisu ({save_version}). Wersja gry ({CURRENT_GAME_VERSION})")
+                return None
+
+            return Player.from_dict(data)
+
+        except Exception as e:
             print(Fore.RED + f"Błąd podczas wczytywania gry: {e}")
             return None
