@@ -31,6 +31,22 @@ class Player:
         self.item_manager = ItemManager()
         self.location = "xyras_house"
         self.lm = LocationManager()
+        self.equipment = {
+            "weapon": None,
+            "armor": None,
+            "helmet": None,
+            "gloves": None,
+            "boots": None,
+            "ring_1": None,
+            "ring_2": None,
+            "amulet": None
+        }
+        self.equipment_stats = {  # Suma statystyk z całego wyposażenia
+            "strength": 0,
+            "defence": 0,
+            "dexterity": 0,
+            "max_hp": 0
+        }
 
     def status(self):
         clear()
@@ -148,8 +164,135 @@ class Player:
             item_description = item["description"] if item and "description" in item else ""
             print(Fore.YELLOW + f"{item_name}: {Style.BRIGHT}x{qty} - {item_description}")
 
+    def can_equip(self, item):
+        """Sprawdza czy gracz może założyć przedmiot"""
+        if not item:
+            return False
+
+        # Sprawdź wymagany poziom
+        if item.get("required_level", 0) > self.level:
+            print(f"Wymagany poziom: {item['required_level']}!")
+            return False
+
+        # Sprawdź ograniczenia klasowe
+        restrictions = item.get("class_restrictions", [])
+        if restrictions and self.klasa not in restrictions:
+            print(f"Twoja klasa ({self.klasa}) nie może użyć tego przedmiotu!")
+            return False
+
+        return True
+
+    def equip(self, item_id):
+        """Zakłada przedmiot z ekwipunku"""
+        if item_id not in self.inventory or self.inventory[item_id] < 1:
+            print(f"Nie posiadasz: {item_id}!")
+            return False
+
+        item = self.item_manager.get_item(item_id)
+        if not item or not self.can_equip(item):
+            return False
+
+        slot = item.get("slot")
+        if not slot or slot not in self.equipment:
+            print("Ten przedmiot nie może być założony!")
+            return False
+
+        # Zdejmij obecny przedmiot jeśli slot zajęty
+        if self.equipment[slot] is not None:
+            self.unequip(slot)
+
+        # Załóż nowy przedmiot
+        self.equipment[slot] = item_id
+        self.remove_item(item_id, 1)
+        self.update_equipment_stats()
+
+        print(f"Założono: {item['name']}!")
+        return True
+
+    def unequip(self, slot):
+        """Zdejmuje przedmiot z danego slotu"""
+        if slot not in self.equipment:
+            return False
+
+        item_id = self.equipment[slot]
+        if item_id is None:
+            return False
+
+        item = self.item_manager.get_item(item_id)
+        if not item:
+            return False
+
+        self.add_item(item_id, 1)
+        self.equipment[slot] = None
+        self.update_equipment_stats()
+
+        print(f"Zdjęto: {item['name']}!")
+        return True
+
+    def update_equipment_stats(self):
+        """Przelicza sumę statystyk z wyposażenia"""
+        # Resetujemy statystyki
+        self.equipment_stats = {k: 0 for k in self.equipment_stats}
+
+        # Obliczamy sumę statystyk z wszystkich założonych przedmiotów
+        for item_id in filter(None, self.equipment.values()):
+            item = self.item_manager.get_item(item_id)
+            if item and "stats" in item:
+                for stat, value in item["stats"].items():
+                    if stat in self.equipment_stats:
+                        self.equipment_stats[stat] += value
+
+        # Bazowe statystyki (bez ekwipunku)
+        base_stats = {
+            "max_hp": self.max_hp + (self.level - 1) * 10,
+            "strength": self.strength + (self.level - 1) * 2,
+            "defence": self.defence + (self.level - 1) * 1,
+            "dexterity": self.dexterity + (self.level - 1) * 1
+        }
+
+        # Aktualizacja statystyk gracza (uwzględniając bonusy z ekwipunku)
+        self.max_hp = base_stats["max_hp"] + self.equipment_stats.get("max_hp", 0)
+        self.hp = min(self.hp, self.max_hp)
+        self.strength = base_stats["strength"] + self.equipment_stats.get("strength", 0)
+        self.defence = base_stats["defence"] + self.equipment_stats.get("defence", 0)
+        self.dexterity = base_stats["dexterity"] + self.equipment_stats.get("dexterity", 0)
+
+    def show_equipment(self):
+        """Wyświetla ekran wyposażenia"""
+        clear()
+        print("\n" + Fore.CYAN + "=" * 20 + " WYPOSAŻENIE " + "=" * 20)
+
+        # Wyświetl założone przedmioty
+        for slot, item_id in self.equipment.items():
+            item = self.item_manager.get_item(item_id) if item_id else None
+            slot_name = slot.replace("_", " ").title()
+
+            if item:
+                stats_str = ", ".join(f"{stat}+{value}" for stat, value in item.get("stats", {}).items())
+                print(f"{Fore.YELLOW}{slot_name}: {Fore.GREEN}{item['name']} {Fore.WHITE}({stats_str})")
+            else:
+                print(f"{Fore.YELLOW}{slot_name}: {Fore.RED}Puste")
+
+        # Wyświetl statystyki z uwzględnieniem bonusów
+        print("\n" + Fore.CYAN + "=" * 20 + " STATYSTYKI " + "=" * 20)
+        stats_display = {
+            "strength": "Siła",
+            "defence": "Obrona",
+            "dexterity": "Zręczność",
+            "max_hp": "Maks. HP"
+        }
+
+        for stat_key, stat_name in stats_display.items():
+            base_value = getattr(self, stat_key) if stat_key != "max_hp" else (50 + (self.level - 1) * 10)
+            bonus = self.equipment_stats.get(stat_key, 0)
+
+            if bonus != 0:
+                print(f"{Fore.YELLOW}{stat_name}: {Fore.RED}{base_value} {Fore.GREEN}(+{bonus})")
+            else:
+                print(f"{Fore.YELLOW}{stat_name}: {Fore.RED}{base_value}")
+
     def to_dict(self):
-        return {
+        data = {
             "version": CURRENT_GAME_VERSION,
             "name": self.name,
             "hp": self.hp,
@@ -166,10 +309,14 @@ class Player:
             "location": self.location,
             "inventory": self.inventory,
             "locations": self.lm.to_dict(),
+            "equipment": self.equipment,
+            "equipment_stats": self.equipment_stats
         }
+        return data
 
     @staticmethod
     def from_dict(data):
+        """Rozszerzenie metody from_dict() o wyposażenie"""
         p = Player(data["name"])
         p.hp = data["hp"]
         p.max_hp = data["max_hp"]
@@ -186,6 +333,14 @@ class Player:
         p.inventory = data.get("inventory", {})
         if "locations" in data:
             p.lm.from_dict(data["locations"])
+        p.equipment = data.get("equipment", {
+            "weapon": None, "armor": None, "helmet": None,
+            "gloves": None, "boots": None, "ring_1": None,
+            "ring_2": None, "amulet": None
+        })
+        p.equipment_stats = data.get("equipment_stats", {
+            "strength": 0, "defence": 0, "dexterity": 0, "max_hp": 0
+        })
         return p
 
     def save(self, filename="save.dat"):
