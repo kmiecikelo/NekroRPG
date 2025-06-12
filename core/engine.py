@@ -2,8 +2,6 @@ import random
 import time
 import textwrap
 from colorama import init, Fore, Style
-
-from core.item_manager import ItemManager
 from utils.clean_screen import clear
 
 
