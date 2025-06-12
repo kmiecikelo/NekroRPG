@@ -1,75 +1,56 @@
 {
   "xyras_house": {
-    "name": "Dom Xyras'a",
-    "description": "Dom położony na rozległej, wietrznej równinie, gdzie złociste trawy falują pod delikatnym podmuchem wiatru. W oddali majaczy tajemniczy zarys gęstego lasu, zapraszając do odkrycia jego sekretów.",
+    "name": "Dom Xyrasa",
+    "description": "Skromna chata na skraju pustkowia, pachnąca ziołami i starym drewnem. Tu zaczyna się Twoja droga.",
     "exits": {
-      "north": "forest",
-      "east": "ruins"
-    }
-  },
-  "forest": {
-    "name": "Las Czarnego Dębu",
-    "description": "Gęste poszycie blokuje większość światła. Powietrze pachnie żywicą i wilgocią. Słychać dziwne skrzypienie gałęzi.",
-    "exits": {
-      "south": "xyras_house",
-      "east": "tavern",
-      "north": "cave"
-    }
-  },
-  "tavern": {
-    "name": "Opuszczona Karczma",
-    "description": "Budynek z pochylonym dachem, w którym czuć zapach stęchlizny i starych beczek. Na podłodze leżą porozrzucane karty do gry.",
-    "exits": {
-      "west": "forest",
-      "down": "cellar"
+      "south": "polana"
     },
-    "items": ["zardzewiały klucz", "pusta butelka"]
+    "items": {
+  "start_sword": 1,
+  "potion_heal": 1
+},
+    "npcs": [
+      {
+        "name": "Xyras",
+        "description": "Siwa broda spływa mu na pierś, a w oczach tli się zmęczenie dawnymi bitwami. Choć jego postura już nie ta, bije od niego spokój i mądrość.",
+        "dialogues": {
+          "start": {
+            "text": "Witaj! Czego potrzebujesz?",
+            "options": [
+              {
+                "text": "Kim jesteś?",
+                "response": "Jestem strażnikiem tych ziem.",
+                "next": "backstory"
+              },
+              {
+                "text": "Co w lesie?",
+                "response": "Las jest niebezpieczny...",
+                "reward": "amulet"
+              }
+            ]
+          },
+          "backstory": {
+            "text": "Chcesz znać moją historię?",
+            "options": [
+              {
+                "text": "Tak",
+                "response": "Walczyłem z bandytami..."
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "Kot Xyras'a",
+        "description": "Gania wesoło po domu, mruczy, je i śpi - typowy kot."
+      }
+    ]
   },
-  "cellar": {
-    "name": "Piwnica Karczmy",
-    "description": "Ciemne pomieszczenie pełne pustych beczek po piwie. W powietrzu unosi się zapach zgnilizny.",
+  "polana": {
+    "name": "Polana",
+    "description": "Złocisty piach miesza się tu z wyschniętą trawą. Wiatr niesie pył, a ślady stóp znikają po chwili. Dom Xyrasa góruje od północy.",
     "exits": {
-      "up": "tavern"
-    },
-    "hidden": ["zakurzony dziennik"]
-  },
-  "cave": {
-    "name": "Jaskinia Szepczących Kamieni",
-    "description": "Wilgotne ściany pokryte są dziwnymi fosforyzującymi porostami. Kamienie wydają się cicho szeptać gdy się poruszasz.",
-    "exits": {
-      "south": "forest",
-      "north": "tunnel"
-    }
-  },
-  "tunnel": {
-    "name": "Wąski Tunel",
-    "description": "Ciasne przejście wymagające czołgania się. Powietrze jest tu ciężkie i trudno oddychać.",
-    "exits": {
-      "south": "cave",
-      "north": "chamber"
-    }
-  },
-  "chamber": {
-    "name": "Ukryta Komnata",
-    "description": "Okrągłe pomieszczenie ze ścianami pokrytymi starożytnymi runami. W centrum stoi kamienny piedestał.",
-    "exits": {
-      "south": "tunnel"
-    },
-    "secrets": ["kamienny artefakt"]
-  },
-  "ruins": {
-    "name": "Ruiny Strażnicy",
-    "description": "Pozostałości po kamiennej budowli. Tylko jedna wieża ocalała z upływem czasu.",
-    "exits": {
-      "west": "xyras_house",
-      "up": "tower"
-    }
-  },
-  "tower": {
-    "name": "Szczyt Wieży",
-    "description": "Wspaniały widok na całą okolicę rozciąga się z tego punktu. Widać nawet odległe góry.",
-    "exits": {
-      "down": "ruins"
+      "north": "xyras_house"
     }
   }
 }

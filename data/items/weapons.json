@@ -1,6 +1,6 @@
 [
     {
-        "id": "sword_01",
+        "id": "start_sword",
         "name": "Miecz Żelazny",
         "type": "weapon",
         "damage": 10,
