@@ -47,3 +47,5 @@ if __name__ == "__main__":
     game = True
     menu = False
     game_loop(player)
+
+    #dodać npc
