@@ -4,6 +4,7 @@ from colorama import init, Fore, Style
 from utils.clean_screen import clear
 from utils.slow_print import slow_print
 from utils.load_game_version import CURRENT_GAME_VERSION
+import textwrap
 
 init(autoreset=True)  # ważne, żeby kolory resetowały się automatycznie
 
@@ -16,8 +17,8 @@ def main_menu():
      8   `88b.  8   888oooo8     88888[       888ooo88P'  888      888 <blue> 888ooo88P'   888ooo88P'  888          </blue> 
      8     `88b.8   888    "     888`88b.     888`88b.    888      888 <blue> 888`88b.     888         888     ooooo</blue> 
      8       `888   888       o  888  `88b.   888  `88b.  `88b    d88' <blue> 888  `88b.   888         `88.    .88' </blue> 
-    o8o        `8  o888ooooood8 o888o  o888o o888o  o888o  `Y8bood8P'  <blue>o888o  o888o o888o         `Y8bood8P'  </blue> 
-    Wersja: {CURRENT_GAME_VERSION}
+    o8o        `8  o888ooooood8 o888o  o888o o888o  o888o  `Y8bood8P'  <blue>o888o  o888o o888o         `Y8bood8P'  </blue>
+    <green>Wersja: {CURRENT_GAME_VERSION}
     """ , Fore.RED, delay=0.00)
     time.sleep(0.5)
     slow_print("=" * 50, Fore.CYAN, delay=0.01)
@@ -37,7 +38,12 @@ def main_menu():
 
     elif wybor in ["3", "info", "informacja"]:
         clear()
-        slow_print("NekroRPG v0.0.2 - by <blue>kmiecikelo</blue>", Fore.YELLOW, random_delay=True)
+        slow_print(f"NekroRPG v{CURRENT_GAME_VERSION} - by <blue>kmiecikelo</blue>", Fore.YELLOW, random_delay=True)
+        slow_print(textwrap.fill(
+            "Projekt NekroRPG to tekstowa gra RPG napisana w Pythonie. "
+            "Gracz wciela się w bohatera przemierzającego mroczny świat pełen potworów, "
+            "lochów oraz tajemniczych postaci.",
+            width=70), Fore.YELLOW, random_delay=True)
         input(Fore.GREEN + "\nNaciśnij Enter aby wrócić..." + Style.RESET_ALL)
         return main_menu()
 
