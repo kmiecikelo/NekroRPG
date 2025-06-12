@@ -32,6 +32,14 @@ def game_loop(player):
         else:
             print(Fore.RED + "\nNieznana lokacja.")
 
+        npcs = player.lm.get_npcs(player.location)
+        if npcs:
+            print(f"\n{Fore.YELLOW}Spotykasz NPC:")
+            for npc in npcs:
+                print(f"- {npc['name']}")
+        else:
+            print("Nie ma tu nikogo...")
+
         print("\n" + Fore.CYAN + "=" * 23 + " MENU " + "=" * 23)
         print("stat / statystyki / info – pokaż status gracza")
         print("inv / eq / ekwipunek / inventory – pokaż ekwipunek gracza")

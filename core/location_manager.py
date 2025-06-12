@@ -17,3 +17,7 @@ class LocationManager:
     def get_location(self, loc_id):
         return self.locations.get(loc_id)
 
+    def get_npcs(self, loc_id):
+        location = self.get_location(loc_id)
+        return location.get("npcs", []) if location else []
+
