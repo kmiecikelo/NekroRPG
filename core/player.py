@@ -3,8 +3,12 @@ import time
 from core.item_manager import ItemManager
 from core.location_manager import LocationManager
 from utils.clean_screen import clear
+from utils.load_game_version import CURRENT_GAME_VERSION
 from colorama import init, Fore, Style
 import json
+
+
+
 
 class Player:
     def __init__(self, name, max_hp=50, strength=5, defence=5, dexterity=5, level=1, exp=0,
@@ -75,7 +79,6 @@ class Player:
         if not loc:
             print("Błąd: nieznana lokalizacja.")
             return
-
         exits = loc.get("exits", {})
         if direction in exits:
             new_location_id = exits[direction]
@@ -96,14 +99,39 @@ class Player:
             raise RuntimeError("Item manager not set.")
         if item_id not in self.item_manager.items:
             raise ValueError(f"Item {item_id} does not exist.")
+        item_name = self.item_manager.items[item_id]['name']
         self.inventory[item_id] = self.inventory.get(item_id, 0) + quantity
-        print(f"Dodano do ekwipunku: {item_id} x{quantity}")
+        print(f"Dodano do ekwipunku: {item_name} x{quantity}")
+        time.sleep(1.5)
 
     def remove_item(self, item_id, quantity=1):
         if item_id in self.inventory:
             self.inventory[item_id] -= quantity
             if self.inventory[item_id] <= 0:
                 del self.inventory[item_id]
+
+    def pickitem(self, item_id, amount=1):
+        loc = self.lm.get_location(self.location)
+        if not loc:
+            print("Nieznana lokacja.")
+            return
+        items = loc.get("items", {})
+        if item_id not in items:
+            print("Nie ma takiego przedmiotu w tej lokacji.")
+            return
+        available_amount = items[item_id]
+        if available_amount < amount:
+            print(f"Nie ma tyle przedmiotów do podniesienia. Dostępne: {available_amount}")
+            return
+        # Dodajemy przedmiot do ekwipunku gracza
+        print(f"Podniosłeś {amount} x {self.item_manager.get_item(item_id)['name']}.")
+        time.sleep(1)
+        self.add_item(item_id, amount)
+        # Odejmujemy z lokacji
+        if available_amount == amount:
+            del items[item_id]
+        else:
+            items[item_id] -= amount
 
     def show_inventory(self):
         clear()
@@ -115,9 +143,12 @@ class Player:
         for item_id, qty in self.inventory.items():
             item = self.item_manager.get_item(item_id) if self.item_manager else None
             item_name = item["name"] if item and "name" in item else item_id
-            print(Fore.YELLOW + f"{item_name}: {Style.BRIGHT}x{qty}")
+            item_description = item["description"] if item and "description" in item else ""
+            print(Fore.YELLOW + f"{item_name}: {Style.BRIGHT}x{qty} - {item_description}")
+
     def to_dict(self):
         return {
+            "version": CURRENT_GAME_VERSION,
             "name": self.name,
             "hp": self.hp,
             "max_hp": self.max_hp,
@@ -132,6 +163,7 @@ class Player:
             "lp": self.lp,
             "location": self.location,
             "inventory": self.inventory,
+            "locations": self.lm.to_dict(),
         }
 
     @staticmethod
@@ -150,6 +182,8 @@ class Player:
         p.lp = data["lp"]
         p.location = data["location"]
         p.inventory = data.get("inventory", {})
+        if "locations" in data:
+            p.lm.from_dict(data["locations"])
         return p
 
     def save(self, filename="save.json"):
@@ -161,6 +195,15 @@ class Player:
 
     @staticmethod
     def load(filename="save.json"):
-        with open(filename, "r") as f:
-            data = json.load(f)
-            return Player.from_dict(data)
+        try:
+            with open(filename, "r") as f:
+                data = json.load(f)
+                save_version = data.get("version", "0.0.0")
+                if save_version != CURRENT_GAME_VERSION:
+                    clear()
+                    print(Fore.RED + f"Nieprawidłowa wersja zapisu ({save_version}). Wersja gry ({CURRENT_GAME_VERSION})")
+                    return None
+                return Player.from_dict(data)
+        except (IOError, json.JSONDecodeError) as e:
+            print(Fore.RED + f"Błąd podczas wczytywania gry: {e}")
+            return None
