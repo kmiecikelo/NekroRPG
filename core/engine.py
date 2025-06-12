@@ -80,6 +80,8 @@ def game_loop(player):
             player.gain_exp(1000)
         elif wybor == "addsword":
             player.add_item("sword_01", 1)
+        elif wybor == "dajsile":
+            player.add_stats(strength=5)
         elif wybor.startswith(("załóż ", "equip ", "eq ")):
             item_name = wybor.split(maxsplit=1)[1]
             found_item = None
