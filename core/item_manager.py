@@ -1,9 +1,16 @@
 import os
+import sys
 import json
+
+def resource_path(relative_path):
+    """Zwraca poprawną ścieżkę po spakowaniu przez PyInstaller."""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 class ItemManager:
     def __init__(self, items_folder="data/items"):
-        self.items_folder = items_folder
+        self.items_folder = resource_path(items_folder)
         self.items = {}  # id -> item dict
         self.load_items()
 
