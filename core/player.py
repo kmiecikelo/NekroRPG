@@ -1,6 +1,8 @@
 import hashlib
 import os
 import time
+
+from core.dialogue import NPC
 from core.item_manager import ItemManager
 from core.location_manager import LocationManager
 from utils.clean_screen import clear
@@ -324,6 +326,59 @@ class Player:
 
             print(f"{Fore.YELLOW}{stat_name}: {Fore.RED}{total} "
                   f"{Fore.WHITE}(bazowa: {base_value}, poziom: +{level_bonus}, ekwipunek: +{bonus})")
+
+    def talk_to_npc(self, npc_name):
+        loc = self.lm.get_location(self.location)
+        npcs = loc.get("npcs", [])
+
+        for npc_data in npcs:
+            if npc_data["name"].lower() == npc_name.lower():
+                if "dialogues" in npc_data:
+                    npc = NPC(
+                        name=npc_data["name"],
+                        description=npc_data["description"],
+                        dialogues=npc_data["dialogues"]
+                    )
+
+                    while True:
+                        available_options = npc.start_dialogue(self)
+
+                        # Jeśli nie ma dostępnych opcji, zakończ dialog
+                        if available_options is None:
+
+                            return True
+
+                        try:
+                            choice = input(f"\n{Fore.CYAN}>> {Style.RESET_ALL}").strip()
+                            if choice == "0":
+                                break
+
+                            choice_index = int(choice)
+                            if not npc.process_choice(choice_index, available_options, self):
+                                break
+
+                        except (ValueError, IndexError):
+                            print(Fore.RED + "Nieprawidłowy wybór!")
+                            continue
+
+
+                    return True
+
+        print(Fore.RED + f"Nie ma NPC o nazwie '{npc_name}' z którym możesz rozmawiać.")
+        return False
+
+    def check_condition(self, condition):
+        """Sprawdza warunek dialogu"""
+        if condition is None:
+            return True
+        elif isinstance(condition, str):
+            try:
+                return eval(condition, {"p": self})
+            except:
+                return False
+        elif callable(condition):
+            return condition(self)
+        return False
 
     def to_dict(self):
         data = {

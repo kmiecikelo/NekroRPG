@@ -71,6 +71,10 @@ def game_loop(player):
             player.show_inventory()
         elif wybor in ["wyposażenie", "equip", "wypos", "eq"]:
             player.show_equipment()
+        elif wybor.startswith(("rozmawiaj ", "talk ", "mów ", "rozmowa ")):
+            npc_name = wybor.split(maxsplit=1)[1]
+            player.talk_to_npc(npc_name)
+            clear()
         elif wybor in ["wyjście", "exit", "quit"]:
             if input("Na pewno chcesz wyjść? (t/n): ").lower() == 't':
                 exit()
