@@ -43,13 +43,13 @@ def game_loop(player):
             print("Nie ma tu nikogo...")
 
         print("\n" + Fore.CYAN + "=" * 23 + " MENU " + "=" * 23)
-        print("stat / info - status gracza")
-        print("inv / ekwipunek - ekwipunek")
-        print("wyposażenie / equip - zarządzanie ekwipunkiem")
-        print("north/south/east/west - ruch")
+        print("stat / info / statystyki - status gracza")
+        print("inv / plecak  - plecak")
+        print("eq / wyposażenie / wypos - zarządzanie ekwipunkiem")
+        print("n/s/e/w/u/d - ruch")
         print("weź <nazwa> [ilość] - podnieś przedmiot")
         print("użyj <nazwa> - użyj przedmiotu")
-        print("załóż <nazwa> / equip <id> - załóż przedmiot")
+        print("załóż <nazwa> / eq <nazwa> - załóż przedmiot")
         print("zdejmij <slot> / unequip <slot> - zdejmij przedmiot")
         print("zapisz - zapisz grę")
         print("wyjście, exit, quit - zakończ grę")
@@ -67,9 +67,9 @@ def game_loop(player):
 
         if wybor in ["stat", "statystyki", "info", "informacje", "stats"]:
             player.status()
-        elif wybor in ["inv", "eq", "ekwipunek", "inventory"]:
+        elif wybor in ["inv", "plecak", "inventory"]:
             player.show_inventory()
-        elif wybor in ["wyposażenie", "equip", "eqp"]:
+        elif wybor in ["wyposażenie", "equip", "wypos", "eq"]:
             player.show_equipment()
         elif wybor in ["wyjście", "exit", "quit"]:
             if input("Na pewno chcesz wyjść? (t/n): ").lower() == 't':
@@ -79,13 +79,12 @@ def game_loop(player):
         elif wybor == "exp1000":
             player.gain_exp(1000)
         elif wybor == "addsword":
-            player.add_item("sword_01", 1)
+            player.add_item("iron_sword", 1)
         elif wybor == "dajsile":
             player.add_stats(strength=5)
-        elif wybor.startswith(("załóż ", "equip ", "eq ")):
+        elif wybor.startswith(("załóż ", "equip ", "eq ", "zaloz ")):
             item_name = wybor.split(maxsplit=1)[1]
             found_item = None
-
             for item_id in player.inventory:
                 item = player.item_manager.get_item(item_id)
                 if item and item['name'].lower() == item_name.lower():
@@ -111,8 +110,15 @@ def game_loop(player):
             print(Fore.GREEN + "Gra została zapisana!")
             time.sleep(1)
             clear()
-        elif wybor in ["north", "n", "south", "s", "east", "e", "west", "w", "up", "down"]:
-            direction = wybor[0] if len(wybor) == 1 else wybor
+        elif wybor in ["north", "n", "south", "s", "east", "e", "west", "w", "up", "down", "u", "d"]:
+            direction = {
+                "n": "north",
+                "s": "south",
+                "e": "east",
+                "w": "west",
+                "u": "up",
+                "d": "down"
+            }.get(wybor, wybor)
             player.move(direction)
             time.sleep(0.5)
             clear()
