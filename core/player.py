@@ -86,15 +86,30 @@ class Player:
         print(f"{Fore.YELLOW}Zdrowie: {Fore.GREEN}{self.hp}/{self.max_hp}")
         print(f"{Fore.YELLOW}Poziom: {Fore.MAGENTA}{self.level}  "
               f"{Fore.YELLOW}Doświadczenie: {Fore.BLUE}{self.exp}/{self.exp_to_next_level()}")
+        print(f"{Fore.YELLOW}Punkty Nauki: {Fore.RED}{self.lp}")
 
         print("\n" + Fore.CYAN + "=" * 20 + " STATYSTYKI " + "=" * 20)
-        print(f"{Fore.YELLOW}Punkty Nauki: {Fore.RED}{self.lp}")
-        print(f"{Fore.YELLOW}Siła: {Fore.RED}{self.strength} (bazowa: {self.base_strength})")
-        print(f"{Fore.YELLOW}Obrona: {Fore.RED}{self.defence} (bazowa: {self.base_defence})")
-        print(f"{Fore.YELLOW}Zręczność: {Fore.RED}{self.dexterity} (bazowa: {self.base_dexterity})")
+        stats_display = {
+            "strength": "Siła",
+            "defence": "Obrona",
+            "dexterity": "Zręczność",
+            "max_hp": "Maks. HP"
+        }
+
+        for stat_key, stat_name in stats_display.items():
+            base_value = getattr(self, f"base_{stat_key}") if hasattr(self, f"base_{stat_key}") else 0
+            level_bonus = (self.level - 1) * (10 if stat_key == "max_hp" else (2 if stat_key == "strength" else 1))
+            bonus = self.equipment_stats.get(stat_key, 0)
+            total = base_value + level_bonus + bonus
+
+            print(f"{Fore.YELLOW}{stat_name}: {Fore.RED}{total} "
+                  f"{Fore.WHITE}(bazowa: {base_value}, poziom: +{level_bonus}, ekwipunek: +{bonus})")
 
     def exp_to_next_level(self):
-        return int(100 * (1.1 ** (self.level - 1)))
+        if self.level <= 10:
+            return 100 * self.level  # Wczesne poziomy: szybko
+        else:
+            return int(1000 + 500 * (self.level - 10))
 
     def check_level_up(self):
         while self.exp >= self.exp_to_next_level():
@@ -102,9 +117,11 @@ class Player:
             self.exp -= required_exp
             self.level += 1
             self.lp += 5
-            self.update_stats()  # Aktualizuj wszystkie statystyki
+            self.update_stats()
             self.hp = self.max_hp
-            print(f"\nAwansowałeś na poziom {Fore.RED}{self.level}{Style.RESET_ALL}!")
+            reward = self.level * 4  # Złoto
+            self.gold += reward
+            print(f"\nAwansowałeś na poziom {Fore.RED}{self.level}{Style.RESET_ALL}! Nagroda: {reward} złota")
             input(Fore.GREEN + "\nNaciśnij Enter aby przejść dalej..." + Style.RESET_ALL)
             clear()
 
