@@ -1,4 +1,10 @@
-# NekroRPG
+<div align="center">
+
+<img src="data/ikona.png" alt="Logo" width="200" height="200"/>
+
+## NekroRPG
+
+</div>
 
 Projekt NekroRPG to tekstowa gra RPG napisana w Pythonie. Gracz wciela się w bohatera przemierzającego mroczny świat pełen potworów, lochów oraz tajemniczych postaci.
 
