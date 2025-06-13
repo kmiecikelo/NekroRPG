@@ -160,3 +160,6 @@ cython_debug/
 .idea/
 save.json
 save.dat
+
+#spec do pyinstallera
+!NekroRPG.spec
