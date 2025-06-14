@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edytor Dialogów Gry</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .panel {
+            flex: 1;
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            font-family: monospace;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .node-editor {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .dialogue-node {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .option {
+            margin-left: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        input, textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        h2, h3 {
+            color: #333;
+        }
+        .location-selector {
+            margin-bottom: 20px;
+        }
+        select {
+            padding: 8px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edytor Dialogów Gry</h1>
+
+    <div class="container">
+        <div class="panel">
+            <h2>JSON</h2>
+            <textarea id="jsonEditor"></textarea>
+            <div class="controls">
+                <button id="loadBtn">Załaduj</button>
+                <button id="saveBtn">Zapisz</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Edytor Dialogów</h2>
+            <div class="location-selector">
+                <select id="locationSelect">
+                    <option value="">Wybierz lokację...</option>
+                </select>
+                <select id="npcSelect" disabled>
+                    <option value="">Wybierz NPC...</option>
+                </select>
+            </div>
+
+            <div id="dialogueEditor" style="display: none;">
+                <h3>Dialogi</h3>
+                <div id="dialogueNodes"></div>
+                <button id="addNodeBtn">Dodaj węzeł dialogowy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dane początkowe
+        let gameData = {
+            "xyras_house": {
+                "name": "Dom Xyrasa",
+                "description": "Skromna chata na skraju pustkowia, zbudowana z poczerniałych drewnianych bali. Dym snuje się leniwie z kamiennego komina.",
+                "exits": {
+                    "south": "polana"
+                },
+                "items": {
+                    "start_sword": 1,
+                    "potion_heal": 1
+                },
+                "npcs": [
+                    {
+                        "name": "Xyras",
+                        "description": "Siwa broda spływa mu na pierś...",
+                        "dialogues": {
+                            "start": {
+                                "text": "Witaj przybyszu! Czego potrzebujesz?",
+                                "options": [
+                                    {
+                                        "text": "Kim jesteś?",
+                                        "response": "Nazywam się Xyras. Jestem strażnikiem tych ziem od wielu lat.",
+                                        "next_node": "backstory"
+                                    },
+                                    {
+                                        "text": "Co wiesz o tym lesie?",
+                                        "response": "Las jest niebezpieczny, szczególnie po zmroku. Ostatnio widziano tam wilkołaki."
+                                    },
+                                    {
+                                        "text": "Czemu mnie uratowałeś?",
+                                        "response": "....",
+                                        "next_node": "czemu_mnie"
+                                    }
+                                ]
+                            },
+                            "backstory": {
+                                "text": "Chcesz poznać moją historię?",
+                                "options": [
+                                    {
+                                        "text": "Tak, opowiedz mi o sobie",
+                                        "response": "Byłem niegdyś kapłanem, ale porzuciłem świątynię, by chronić te ziemie. To długa historia...",
+                                        "next_node": "start"
+                                    },
+                                    {
+                                        "text": "Nie, to nie jest ważne",
+                                        "response": "Jak wolisz. W każdym razie jestem tu, by pomagać.",
+                                        "next_node": "start"
+                                    }
+                                ]
+                            },
+                            "czemu_mnie": {
+                                "text": "Widziałem Cię w wizji...\nJesteś kimś kto zdoła uratować nasz świat...",
+                                "options": [
+                                    {
+                                        "text": "Rozumiem",
+                                        "response": "...",
+                                        "next_node": "start"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            "polana": {
+                "name": "Polana",
+                "description": "Rozległa złocista polana, gdzie piasek miesza się z wyschniętą trawą. W oddali słychać świergot ptaków i szum wiatru w koronach drzew.",
+                "exits": {
+                    "north": "xyras_house",
+                    "east": "gęsty_las",
+                    "west": "wąwóz"
+                }
+            }
+        };
+
+        // Elementy DOM
+        const jsonEditor = document.getElementById('jsonEditor');
+        const loadBtn = document.getElementById('loadBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const locationSelect = document.getElementById('locationSelect');
+        const npcSelect = document.getElementById('npcSelect');
+        const dialogueEditor = document.getElementById('dialogueEditor');
+        const dialogueNodes = document.getElementById('dialogueNodes');
+        const addNodeBtn = document.getElementById('addNodeBtn');
+
+        // Aktualnie wybrane elementy
+        let currentLocation = null;
+        let currentNpc = null;
+        let currentNode = null;
+
+        // Inicjalizacja edytora
+        function initEditor() {
+            jsonEditor.value = JSON.stringify(gameData, null, 2);
+            populateLocations();
+
+            // Event listeners
+            loadBtn.addEventListener('click', loadFromEditor);
+            saveBtn.addEventListener('click', saveToEditor);
+            locationSelect.addEventListener('change', locationSelected);
+            npcSelect.addEventListener('change', npcSelected);
+            addNodeBtn.addEventListener('click', addNewNode);
+        }
+
+        // Ładowanie danych z edytora JSON
+        function loadFromEditor() {
+            try {
+                gameData = JSON.parse(jsonEditor.value);
+                populateLocations();
+                alert('Dane załadowane pomyślnie!');
+            } catch (e) {
+                alert('Błąd parsowania JSON: ' + e.message);
+            }
+        }
+
+        // Zapis danych do edytora JSON
+        function saveToEditor() {
+            jsonEditor.value = JSON.stringify(gameData, null, 2);
+            alert('Dane zapisane!');
+        }
+
+        // Wypełnianie listy lokacji
+        function populateLocations() {
+            locationSelect.innerHTML = '<option value="">Wybierz lokację...</option>';
+
+            for (const locationId in gameData) {
+                const location = gameData[locationId];
+                const option = document.createElement('option');
+                option.value = locationId;
+                option.textContent = `${location.name} (${locationId})`;
+                locationSelect.appendChild(option);
+            }
+        }
+
+        // Wybór lokacji
+        function locationSelected() {
+            const locationId = locationSelect.value;
+            if (!locationId) {
+                npcSelect.disabled = true;
+                npcSelect.innerHTML = '<option value="">Wybierz NPC...</option>';
+                dialogueEditor.style.display = 'none';
+                return;
+            }
+
+            currentLocation = gameData[locationId];
+            npcSelect.disabled = false;
+            npcSelect.innerHTML = '<option value="">Wybierz NPC...</option>';
+
+            if (currentLocation.npcs && currentLocation.npcs.length > 0) {
+                currentLocation.npcs.forEach((npc, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = npc.name;
+                    npcSelect.appendChild(option);
+                });
+            }
+
+            dialogueEditor.style.display = 'none';
+        }
+
+        // Wybór NPC
+        function npcSelected() {
+            const npcIndex = npcSelect.value;
+            if (npcIndex === "") {
+                dialogueEditor.style.display = 'none';
+                return;
+            }
+
+            currentNpc = currentLocation.npcs[npcIndex];
+            dialogueEditor.style.display = 'block';
+            renderDialogueNodes();
+        }
+
+        // Renderowanie węzłów dialogowych
+        function renderDialogueNodes() {
+            dialogueNodes.innerHTML = '';
+
+            if (!currentNpc.dialogues) {
+                currentNpc.dialogues = {};
+            }
+
+            for (const nodeId in currentNpc.dialogues) {
+                addNodeToEditor(nodeId, currentNpc.dialogues[nodeId]);
+            }
+        }
+
+        // Dodawanie węzła do edytora
+        function addNodeToEditor(nodeId, node) {
+            const nodeDiv = document.createElement('div');
+            nodeDiv.className = 'dialogue-node';
+            nodeDiv.dataset.nodeId = nodeId;
+
+            nodeDiv.innerHTML = `
+                <h4>Węzeł: ${nodeId}</h4>
+                <label>Tekst:</label>
+                <textarea class="node-text">${node.text || ''}</textarea>
+                <div class="node-options"></div>
+                <button class="add-option-btn">Dodaj opcję</button>
+                <button class="delete-node-btn">Usuń węzeł</button>
+            `;
+
+            const optionsContainer = nodeDiv.querySelector('.node-options');
+            if (node.options) {
+                node.options.forEach((option, index) => {
+                    addOptionToNode(optionsContainer, index, option);
+                });
+            }
+
+            nodeDiv.querySelector('.add-option-btn').addEventListener('click', () => {
+                addOptionToNode(optionsContainer, node.options ? node.options.length : 0, {});
+            });
+
+            nodeDiv.querySelector('.delete-node-btn').addEventListener('click', () => {
+                if (confirm('Czy na pewno chcesz usunąć ten węzeł dialogowy?')) {
+                    delete currentNpc.dialogues[nodeId];
+                    renderDialogueNodes();
+                }
+            });
+
+            nodeDiv.querySelector('.node-text').addEventListener('change', (e) => {
+                currentNpc.dialogues[nodeId].text = e.target.value;
+            });
+
+            dialogueNodes.appendChild(nodeDiv);
+        }
+
+        // Dodawanie opcji do węzła
+        function addOptionToNode(container, index, option) {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option';
+            optionDiv.dataset.optionIndex = index;
+
+            optionDiv.innerHTML = `
+                <label>Tekst opcji:</label>
+                <input type="text" class="option-text" value="${option.text || ''}">
+                <label>Odpowiedź:</label>
+                <textarea class="option-response">${option.response || ''}</textarea>
+                <label>Następny węzeł (opcjonalnie):</label>
+                <input type="text" class="option-next-node" value="${option.next_node || ''}">
+                <button class="delete-option-btn">Usuń opcję</button>
+            `;
+
+            optionDiv.querySelector('.option-text').addEventListener('change', (e) => {
+                const nodeId = optionDiv.closest('.dialogue-node').dataset.nodeId;
+                const optionIndex = optionDiv.dataset.optionIndex;
+                currentNpc.dialogues[nodeId].options[optionIndex].text = e.target.value;
+            });
+
+            optionDiv.querySelector('.option-response').addEventListener('change', (e) => {
+                const nodeId = optionDiv.closest('.dialogue-node').dataset.nodeId;
+                const optionIndex = optionDiv.dataset.optionIndex;
+                currentNpc.dialogues[nodeId].options[optionIndex].response = e.target.value;
+            });
+
+            optionDiv.querySelector('.option-next-node').addEventListener('change', (e) => {
+                const nodeId = optionDiv.closest('.dialogue-node').dataset.nodeId;
+                const optionIndex = optionDiv.dataset.optionIndex;
+                currentNpc.dialogues[nodeId].options[optionIndex].next_node = e.target.value || undefined;
+            });
+
+            optionDiv.querySelector('.delete-option-btn').addEventListener('click', () => {
+                const nodeId = optionDiv.closest('.dialogue-node').dataset.nodeId;
+                const optionIndex = parseInt(optionDiv.dataset.optionIndex);
+
+                currentNpc.dialogues[nodeId].options.splice(optionIndex, 1);
+                renderDialogueNodes();
+            });
+
+            container.appendChild(optionDiv);
+        }
+
+        // Dodawanie nowego węzła dialogowego
+        function addNewNode() {
+            const newNodeId = prompt('Podaj ID nowego węzła dialogowego:');
+            if (!newNodeId) return;
+
+            if (currentNpc.dialogues[newNodeId]) {
+                alert('Węzeł o tym ID już istnieje!');
+                return;
+            }
+
+            currentNpc.dialogues[newNodeId] = {
+                text: '',
+                options: []
+            };
+
+            renderDialogueNodes();
+        }
+
+        // Inicjalizacja edytora po załadowaniu strony
+        window.addEventListener('DOMContentLoaded', initEditor);
+    </script>
+</body>
+</html>
