@@ -28,7 +28,7 @@
               },
               {
                 "text": "Czemu mnie uratowałeś?",
-                "response": "",
+                "response": "....",
                 "next_node": "czemu_mnie"
               }
             ]
@@ -53,7 +53,7 @@
             "options": [
               {
                 "text": "Rozumiem",
-                "response": "",
+                "response": "...",
                 "next_node": "start"
               }
             ]

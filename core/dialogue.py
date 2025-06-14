@@ -98,6 +98,8 @@ class NPC:
             self.current_dialogue = selected_option.next_node
 
         # Zawsze kontynuuj dialog, chyba że wybrano opcję wyjścia (0)
+        input(Fore.GREEN + "\nNaciśnij Enter aby kontynuować..." + Style.RESET_ALL)
+        clear()
         return True
 
     def _give_reward(self, reward, player):
