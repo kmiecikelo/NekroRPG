@@ -1,7 +1,7 @@
 {
   "xyras_house": {
     "name": "Dom Xyrasa",
-    "description": "Skromna chata na skraju pustkowia...",
+    "description": "Skromna chata na skraju pustkowia, zbudowana z poczerniałych drewnianych bali. Dym snuje się leniwie z kamiennego komina.",
     "exits": {
       "south": "polana"
     },
@@ -25,6 +25,11 @@
               {
                 "text": "Co wiesz o tym lesie?",
                 "response": "Las jest niebezpieczny, szczególnie po zmroku. Ostatnio widziano tam wilkołaki."
+              },
+              {
+                "text": "Czemu mnie uratowałeś?",
+                "response": "",
+                "next_node": "czemu_mnie"
               }
             ]
           },
@@ -42,6 +47,16 @@
                 "next_node": "start"
               }
             ]
+          },
+          "czemu_mnie": {
+            "text": "Widziałem Cię w wizji...\nJesteś kimś kto zdoła uratować nasz świat...",
+            "options": [
+              {
+                "text": "Rozumiem",
+                "response": "",
+                "next_node": "start"
+              }
+            ]
           }
         }
       }
@@ -49,9 +64,11 @@
   },
   "polana": {
     "name": "Polana",
-    "description": "Złocisty piach miesza się tu z wyschniętą trawą...",
+    "description": "Rozległa złocista polana, gdzie piasek miesza się z wyschniętą trawą. W oddali słychać świergot ptaków i szum wiatru w koronach drzew.",
     "exits": {
-      "north": "xyras_house"
+      "north": "xyras_house",
+      "east": "gęsty_las",
+      "west": "wąwóz"
     }
   }
 }
