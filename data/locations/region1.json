@@ -28,7 +28,7 @@
               },
               {
                 "text": "Czemu mnie uratowałeś?",
-                "response": "....",
+                "response": "Widziałem Cię w wizji...",
                 "next_node": "czemu_mnie"
               }
             ]
@@ -49,11 +49,11 @@
             ]
           },
           "czemu_mnie": {
-            "text": "Widziałem Cię w wizji...\nJesteś kimś kto zdoła uratować nasz świat...",
+            "text": "Jesteś kimś kto zdoła uratować nasz świat...",
             "options": [
               {
                 "text": "Rozumiem",
-                "response": "...",
+                "response": "Coś jeszcze?",
                 "next_node": "start"
               }
             ]
