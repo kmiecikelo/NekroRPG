@@ -16,6 +16,7 @@ class Player:
                  klasa="Wojownik", rasa="Człowiek", gold=0, lp=0):
         # Inicjalizacja podstawowych atrybutów
         self.name = name
+        self.max_hp = max(max_hp, 0)
         self.level = max(level, 1)
         self.exp = max(exp, 0)
         self.klasa = klasa
@@ -33,8 +34,7 @@ class Player:
         self.equipment_stats = {
             "strength": 0,
             "defence": 0,
-            "dexterity": 0,
-            "max_hp": 0
+            "dexterity": 0
         }
 
         # Inicjalizacja ekwipunku
@@ -50,33 +50,25 @@ class Player:
         }
 
         # Statystyki bazowe
-        self.base_max_hp = max(max_hp, 0)
         self.base_strength = max(strength, 0)
         self.base_defence = max(defence, 0)
         self.base_dexterity = max(dexterity, 0)
 
-        # Inicjalizacja HP przed update_stats()
-        self.max_hp = self.calculate_max_hp()
+        # Inicjalizacja HP
         self.hp = self.max_hp  # Ustawiamy pełne HP na start
-
-        # Inicjalizacja pozostałych statystyk
         self.update_stats()
 
-    def calculate_max_hp(self):
-        """Oblicza maksymalne HP na podstawie statystyki bazowej i poziomu"""
-        return self.base_max_hp + (self.level - 1) * 10 + self.equipment_stats.get("max_hp", 0)
-
     def calculate_strength(self):
-        """Oblicza siłę na podstawie statystyki bazowej i poziomu"""
-        return self.base_strength + (self.level - 1) * 2 + self.equipment_stats.get("strength", 0)
+        """Oblicza siłę na podstawie statystyki bazowej i ekwipunku"""
+        return self.base_strength + self.equipment_stats.get("strength", 0)
 
     def calculate_defence(self):
-        """Oblicza obronę na podstawie statystyki bazowej i poziomu"""
-        return self.base_defence + (self.level - 1) * 1 + self.equipment_stats.get("defence", 0)
+        """Oblicza obronę na podstawie statystyki bazowej i ekwipunku"""
+        return self.base_defence + self.equipment_stats.get("defence", 0)
 
     def calculate_dexterity(self):
-        """Oblicza zręczność na podstawie statystyki bazowej i poziomu"""
-        return self.base_dexterity + (self.level - 1) * 1 + self.equipment_stats.get("dexterity", 0)
+        """Oblicza zręczność na podstawie statystyki bazowej i ekwipunku"""
+        return self.base_dexterity + self.equipment_stats.get("dexterity", 0)
 
     def status(self):
         clear()
@@ -94,22 +86,20 @@ class Player:
         stats_display = {
             "strength": "Siła",
             "defence": "Obrona",
-            "dexterity": "Zręczność",
-            "max_hp": "Maks. HP"
+            "dexterity": "Zręczność"
         }
 
         for stat_key, stat_name in stats_display.items():
-            base_value = getattr(self, f"base_{stat_key}") if hasattr(self, f"base_{stat_key}") else 0
-            level_bonus = (self.level - 1) * (10 if stat_key == "max_hp" else (2 if stat_key == "strength" else 1))
+            base_value = getattr(self, f"base_{stat_key}")
             bonus = self.equipment_stats.get(stat_key, 0)
-            total = base_value + level_bonus + bonus
+            total = base_value + bonus
 
             print(f"{Fore.YELLOW}{stat_name}: {Fore.RED}{total} "
-                  f"{Fore.WHITE}(bazowa: {base_value}, poziom: +{level_bonus}, ekwipunek: +{bonus})")
+                  f"{Fore.WHITE}(bazowa: {base_value}, ekwipunek: +{bonus})")
 
     def exp_to_next_level(self):
         if self.level <= 10:
-            return 100 * self.level  # Wczesne poziomy: szybko
+            return 100 * self.level
         else:
             return int(1000 + 500 * (self.level - 10))
 
@@ -119,8 +109,8 @@ class Player:
             self.exp -= required_exp
             self.level += 1
             self.lp += 5
-            self.update_stats()
-            self.hp = self.max_hp
+            self.max_hp += 5
+            self.hp = self.max_hp  # Przywracamy pełne HP przy awansie
             reward = self.level * 4  # Złoto
             self.gold += reward
             print(f"\nAwansowałeś na poziom {Fore.RED}{self.level}{Style.RESET_ALL}! Nagroda: {reward} złota")
@@ -129,22 +119,18 @@ class Player:
 
     def update_stats(self):
         """Aktualizuje wszystkie statystyki po zmianach"""
-        self.max_hp = self.calculate_max_hp()
         self.hp = min(self.hp, self.max_hp)
         self.strength = self.calculate_strength()
         self.defence = self.calculate_defence()
         self.dexterity = self.calculate_dexterity()
 
-    def add_stats(self, strength=0, defence=0, dexterity=0, max_hp=0):
+    def add_stats(self, strength=0, defence=0, dexterity=0):
         """Dodaje punkty do statystyk bazowych"""
         self.base_strength += strength
         self.base_defence += defence
         self.base_dexterity += dexterity
-        self.base_max_hp += max_hp
-        self.update_stats()  # Aktualizuje wszystkie statystyki
-        print(
-            f"Otrzymałeś bonus do statystyk: +{strength} Siły, +{defence} Obrony, "
-            f"+{dexterity} Zręczności, +{max_hp} Maks. HP")
+        self.update_stats()
+        print(f"Otrzymałeś bonus do statystyk: +{strength} Siły, +{defence} Obrony, +{dexterity} Zręczności")
         input(Fore.GREEN + "\nNaciśnij Enter aby przejść dalej..." + Style.RESET_ALL)
 
     def gain_exp(self, amount):
@@ -155,6 +141,7 @@ class Player:
     def heal(self, amount):
         self.hp = min(self.hp + amount, self.max_hp)
         print(f"Przywrocono {amount} HP. Aktualne HP: {self.hp}/{self.max_hp}")
+
 
     def move(self, direction):
         loc = self.lm.get_location(self.location)
@@ -232,11 +219,13 @@ class Player:
 
         if item.get("required_level", 0) > self.level:
             print(f"Wymagany poziom: {item['required_level']}!")
+            time.sleep(1.2)
             return False
 
         restrictions = item.get("class_restrictions", [])
         if restrictions and self.klasa not in restrictions:
             print(f"Twoja klasa ({self.klasa}) nie może użyć tego przedmiotu!")
+            time.sleep(1.2)
             return False
 
         return True
@@ -244,6 +233,7 @@ class Player:
     def equip(self, item_id):
         if item_id not in self.inventory or self.inventory[item_id] < 1:
             print(f"Nie posiadasz: {item_id}!")
+            time.sleep(1.2)
             return False
 
         item = self.item_manager.get_item(item_id)
@@ -253,6 +243,7 @@ class Player:
         slot = item.get("slot")
         if not slot or slot not in self.equipment:
             print("Ten przedmiot nie może być założony!")
+            time.sleep(1.2)
             return False
 
         if self.equipment[slot] is not None:
@@ -263,6 +254,7 @@ class Player:
         self.update_equipment_stats()
 
         print(f"Założono: {item['name']}!")
+        time.sleep(1.2)
         return True
 
     def unequip(self, slot):
@@ -285,13 +277,13 @@ class Player:
         return True
 
     def update_equipment_stats(self):
-        self.equipment_stats = {k: 0 for k in self.equipment_stats}
+        self.equipment_stats = {"strength": 0, "defence": 0, "dexterity": 0}  # Usunięte max_hp
 
         for item_id in filter(None, self.equipment.values()):
             item = self.item_manager.get_item(item_id)
             if item and "stats" in item:
                 for stat, value in item["stats"].items():
-                    if stat in self.equipment_stats:
+                    if stat in self.equipment_stats:  # Tylko statystyki które pozostały
                         self.equipment_stats[stat] += value
 
         self.update_stats()
@@ -314,18 +306,16 @@ class Player:
         stats_display = {
             "strength": "Siła",
             "defence": "Obrona",
-            "dexterity": "Zręczność",
-            "max_hp": "Maks. HP"
+            "dexterity": "Zręczność"
         }
 
         for stat_key, stat_name in stats_display.items():
-            base_value = getattr(self, f"base_{stat_key}") if hasattr(self, f"base_{stat_key}") else 0
-            level_bonus = (self.level - 1) * (2 if stat_key == "strength" else 1)
+            base_value = getattr(self, f"base_{stat_key}")
             bonus = self.equipment_stats.get(stat_key, 0)
-            total = base_value + level_bonus + bonus
+            total = base_value + bonus
 
             print(f"{Fore.YELLOW}{stat_name}: {Fore.RED}{total} "
-                  f"{Fore.WHITE}(bazowa: {base_value}, poziom: +{level_bonus}, ekwipunek: +{bonus})")
+                  f"{Fore.WHITE}(bazowa: {base_value}, ekwipunek: +{bonus})")
 
     def talk_to_npc(self, npc_name):
         loc = self.lm.get_location(self.location)
@@ -384,7 +374,6 @@ class Player:
         data = {
             "version": CURRENT_GAME_VERSION,
             "name": self.name,
-            "base_max_hp": self.base_max_hp,
             "base_strength": self.base_strength,
             "base_defence": self.base_defence,
             "base_dexterity": self.base_dexterity,
@@ -406,7 +395,7 @@ class Player:
     @staticmethod
     def from_dict(data):
         p = Player(data["name"],
-                   max_hp=data.get("base_max_hp", 50),
+                   max_hp=data.get("max_hp", 50),
                    strength=data.get("base_strength", 5),
                    defence=data.get("base_defence", 5),
                    dexterity=data.get("base_dexterity", 5),
@@ -427,7 +416,7 @@ class Player:
             "ring_2": None, "amulet": None
         })
         p.equipment_stats = data.get("equipment_stats", {
-            "strength": 0, "defence": 0, "dexterity": 0, "max_hp": 0
+            "strength": 0, "defence": 0, "dexterity": 0
         })
         p.update_stats()
         return p
