@@ -51,6 +51,7 @@ def game_loop(player):
         print("użyj <nazwa> - użyj przedmiotu")
         print("załóż <nazwa> / eq <nazwa> - załóż przedmiot")
         print("zdejmij <slot> / unequip <slot> - zdejmij przedmiot")
+        print("rozmawiaj <npc> / talk <npc> - rozmawiaj z kimś")
         print("zapisz - zapisz grę")
         print("wyjście, exit, quit - zakończ grę")
         print("help - pomoc")
